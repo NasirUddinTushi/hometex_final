@@ -1,0 +1,93 @@
+/* === Logo-based tokens === */
+:root {
+  --hti-green: #0a8f4d;   /* primary (green) */
+  --hti-red:   #d62b2b;   /* accent (red) */
+  --radius: 10px;
+  --shadow: 0 6px 20px rgba(0,0,0,.08);
+}
+
+/* Light */
+:root[data-theme="light"] {
+  --bg: #f7f9fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --header-bg: #ffffff;
+  --header-text: #111827;
+  --link: var(--hti-green);
+  --btn: var(--hti-green);
+  --btn-text: #ffffff;
+  --table-head: #f1f5f9;
+}
+
+/* Dark */
+:root[data-theme="dark"] {
+  --bg: #0b1220;
+  --card: #121a2b;
+  --text: #e5e7eb;
+  --muted: #a1a1aa;
+  --border: #1f2a44;
+  --header-bg: #0f172a;
+  --header-text: #e5e7eb;
+  --link: #4cd790;
+  --btn: #17a06d;     /* brighter green */
+  --btn-text: #0b1220;
+  --table-head: #111a2c;
+}
+
+/* Base */
+html, body { background: var(--bg) !important; color: var(--text) !important; }
+a { color: var(--link); }
+a:hover { opacity: .9; }
+
+/* Header */
+#header {
+  background: var(--header-bg) !important;
+  color: var(--header-text) !important;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+}
+#header a { color: var(--header-text) !important; text-decoration: none; }
+
+/* Branding */
+.hti-brand { display:flex; align-items:center; gap:10px; }
+.hti-logo  { height:28px; border-radius:4px; }
+
+/* Right-side theme toggle */
+.hti-nav-global { position:absolute; right:16px; top:10px; display:flex; gap:8px; }
+.hti-toggle {
+  padding:6px 10px; border-radius:999px; border:1px solid var(--border);
+  background: var(--card); color: var(--text); cursor:pointer;
+}
+.hti-toggle:hover { box-shadow: var(--shadow); }
+
+/* Cards / modules / inlines */
+.module, .inline-group, .app-auth, .app-list {
+  background: var(--card);
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.module h2, .module caption { background: var(--table-head) !important; color: var(--text) !important; }
+
+/* Forms */
+fieldset { border-color: var(--border) !important; }
+input, select, textarea {
+  background: var(--card) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid color-mix(in oklab, var(--btn) 35%, transparent);
+}
+
+/* Buttons */
+.button, input[type=submit], .submit-row input { border-radius: 8px !important; }
+.button.default, .submit-row input.default, input[type=submit].default {
+  background: var(--btn) !important; color: var(--btn-text) !important; border-color: var(--btn) !important;
+}
+
+/* Login card */
+.login #container { border-radius: 14px; box-shadow: var(--shadow); background: var(--card); }

@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}HomeTexIndustries Admin{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="icon" href="{% static 'brand/favicon.ico' %}">
+  <link rel="stylesheet" href="{% static 'admin/hti-admin.css' %}">
+  <script>
+    /* পেজ লোডের আগেই থিম সেট (FOUC এড়াতে) */
+    (function(){
+      try {
+        var s = localStorage.getItem('hti_admin_theme');
+        if (!s || s === 'system') {
+          s = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = s;
+      } catch(e) {}
+    })();
+  </script>
+  <script src="{% static 'admin/theme-toggle.js' %}" defer></script>
+{% endblock %}
+
+{% block branding %}
+  <div id="site-name" class="hti-brand">
+    <a href="{% url 'admin:index' %}">
+      <img src="{% static 'brand/logo.png' %}" class="hti-logo" alt="HTI">
+      <span>HomeTexIndustries Admin</span>
+    </a>
+  </div>
+{% endblock %}
+
+{% block nav-global %}
+  <div class="hti-nav-global">
+    <button id="hti-theme-toggle" type="button" class="hti-toggle" title="Toggle theme">
+      <span class="hti-icon">🌙</span><span class="hti-label">Theme</span>
+    </button>
+  </div>
+  {{ block.super }}
+{% endblock %}

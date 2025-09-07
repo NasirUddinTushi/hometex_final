@@ -1,0 +1,28 @@
+{% extends "admin/login.html" %}
+{% load static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/hti-admin.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script>
+    (function(){
+      try {
+        var s = localStorage.getItem('hti_admin_theme');
+        if (!s || s === 'system') {
+          s = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = s;
+      } catch(e) {}
+    })();
+  </script>
+{% endblock %}
+
+{% block branding %}
+  <h1 id="site-name" class="hti-brand">
+    <img src="{% static 'brand/logo.png' %}" class="hti-logo" alt="HTI"> HomeTexIndustries Admin
+  </h1>
+{% endblock %}

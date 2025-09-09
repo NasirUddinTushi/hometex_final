@@ -1,11 +1,14 @@
 from rest_framework import serializers
-from .models import Order, OrderItem, Discount
+from .models import Order, OrderItem, Discount, DeliveryRule
 from apps.accounts.models import Customer, CustomerAddress
-from apps.products.models import Product, AttributeValue   # ✅ এখান থেকে import
+from apps.products.models import Product, AttributeValue
 
 
+# -------------------------
 # Order Item Serializer
+# -------------------------
 class OrderItemSerializer(serializers.ModelSerializer):
+    # ইনপুটে product_id / attribute_id আসবে, কিন্তু ভেতরে instance map হবে
     product_id = serializers.PrimaryKeyRelatedField(
         source='product',
         queryset=Product.objects.all(),
@@ -15,7 +18,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     )
     attribute_id = serializers.PrimaryKeyRelatedField(
         source='attributes',
-        queryset=AttributeValue.objects.all(),   # ✅ এখন AttributeValue ব্যবহার হচ্ছে
+        queryset=AttributeValue.objects.all(),
         many=True,
         required=False,
         allow_empty=True,
@@ -29,7 +32,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['product_id', 'attribute_id', 'quantity', 'unit_price']
 
 
+# -------------------------
 # Shipping Info Serializer
+# -------------------------
 class ShippingInfoSerializer(serializers.Serializer):
     email = serializers.EmailField()
     firstName = serializers.CharField()
@@ -38,26 +43,33 @@ class ShippingInfoSerializer(serializers.Serializer):
     city = serializers.CharField()
     country = serializers.CharField()
     postalCode = serializers.CharField()
-    paymentMethod = serializers.CharField()
+    # paymentMethod এখানে লাগবে না; top-level এ আসবে
     password = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
 
+# -------------------------
 # Customer Payload Serializer
+# -------------------------
 class CustomerPayloadSerializer(serializers.Serializer):
     customer_id = serializers.IntegerField(required=False, allow_null=True)
     shipping_info = ShippingInfoSerializer()
 
 
+# -------------------------
 # Summary Serializer
+# -------------------------
 class SummarySerializer(serializers.Serializer):
     subtotal = serializers.DecimalField(max_digits=10, decimal_places=2)
-    delivery = serializers.DecimalField(max_digits=10, decimal_places=2)
+    # delivery/total server-side compute হবে, তাই required=False
+    delivery = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
     discount_code = serializers.CharField(allow_null=True, required=False)
     discount_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
-    total = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
 
 
-# Order Serializer
+# -------------------------
+# Order Serializer (Request)
+# -------------------------
 class OrderSerializer(serializers.Serializer):
     customer_payload = CustomerPayloadSerializer()
     payment_method = serializers.CharField()
@@ -65,7 +77,9 @@ class OrderSerializer(serializers.Serializer):
     summary = SummarySerializer()
 
 
-# Discount Serializer
+# -------------------------
+# Discount Serializer (Response)
+# -------------------------
 class DiscountSerializer(serializers.ModelSerializer):
     DISCOUNT_ID = serializers.IntegerField(source='id')
     CODE = serializers.CharField(source='code')
@@ -83,3 +97,15 @@ class DiscountSerializer(serializers.ModelSerializer):
             'MIN_PURCHASE_AMOUNT', 'USAGE_COUNT', 'IS_ACTIVE'
         ]
         read_only_fields = fields
+
+
+# -------------------------
+# Delivery Rule Serializer (Preview/Rules endpoint)
+# -------------------------
+class DeliveryRuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryRule
+        fields = [
+            "id", "zone", "min_weight_g", "max_weight_g",
+            "amount", "priority", "is_active"
+        ]

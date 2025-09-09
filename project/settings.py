@@ -1,6 +1,4 @@
 from pathlib import Path
-# from .unfold_config import UNFOLD
-# import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -10,7 +8,6 @@ DEBUG = True
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 INSTALLED_APPS = [
-    # "unfold",                   
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -18,6 +15,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "corsheaders",     
+
     # custom apps
     "apps.accounts",
     "apps.site_config",
@@ -27,6 +26,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",   # ⬅️ ADD THIS (সবার উপরে রাখুন)
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -41,7 +41,6 @@ ROOT_URLCONF = "project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # ✅ কাস্টম টেমপ্লেট (রাখতে চাইলে)
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -75,13 +74,9 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# ✅ static/media ঠিকভাবে সার্ভ করার জন্য
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
-
-# আপনার প্রোজেক্টে যদি নিজস্ব static ফোল্ডার থাকে:
-STATICFILES_DIRS = [BASE_DIR / "static"]  # optional
-# collectstatic কোথায় যাবে:
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_ROOT  = BASE_DIR / "media"
 
@@ -93,15 +88,36 @@ AUTHENTICATION_BACKENDS = [
 
 AUTH_USER_MODEL = "accounts.Customer"
 
-# ✅ admin login/logout flow clean
 LOGIN_URL = "/admin/login/"
 LOGIN_REDIRECT_URL = "/admin/"
 LOGOUT_REDIRECT_URL = "/admin/login/"
 
-# ডেভেলপিং অবস্থায় – ঠিক আছে
 CSRF_COOKIE_SECURE = False
 
-# DRF – admin auth-এ প্রভাব ফেলে না; ফাঁকা রাখলে সমস্যা নেই
+# DRF
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
 }
+
+# -----------------------------
+# ✅ CORS HEADERS SETTINGS
+# -----------------------------
+# Development এ সব origin allow
+CORS_ALLOW_ALL_ORIGINS = True  
+
+# যদি শুধু নির্দিষ্ট ডোমেইন allow করতে চান:
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:5173",
+#     "https://your-frontend.com",
+# ]
+
+# Extra headers allow করতে চাইলে:
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "content-disposition",
+    "authorization",
+]
+
+# Cookie / session যদি দরকার হয় (JWT না হলে):
+CORS_ALLOW_CREDENTIALS = True

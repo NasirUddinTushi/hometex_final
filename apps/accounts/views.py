@@ -38,10 +38,9 @@ class LoginView(APIView):
             login(request, user)  # Session-based login
             return Response({
                 "message": "Login successful",
-                "user": {
-                    "customer_id": user.id,
-                    "email": user.email
-                }
+                "customer_id": user.id,
+                "email": user.email
+                
             }, status=status.HTTP_200_OK)
         return Response({"message": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -82,7 +81,7 @@ class CustomerAddressView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        # যদি query param এ customer_id থাকে
+        # if query param  customer_id 
         customer_id = request.query_params.get("customer_id")
         if customer_id:
             customer = Customer.objects.filter(id=customer_id).first()

@@ -3,7 +3,7 @@ from .views import (
     OrderCreateAPIView,
     DiscountListAPIView,
     CustomerOrdersAPIView,
-    DeliveryPreviewAPIView,   # optional test endpoint
+    DeliveryAPIView,  
 )
 
 app_name = "orders"
@@ -19,5 +19,5 @@ urlpatterns = [
     path("customer-orders/", CustomerOrdersAPIView.as_view(), name="customer-orders"),
 
     # GET: delivery charge preview (?zone=inside&weight_g=900)
-    path("delivery/preview/", DeliveryPreviewAPIView.as_view(), name="delivery-preview"),
+    path("delivery/", DeliveryAPIView.as_view(), name="delivery-preview"),
 ]

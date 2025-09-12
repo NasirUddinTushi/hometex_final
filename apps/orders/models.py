@@ -4,7 +4,7 @@ from decimal import Decimal
 import math
 
 from apps.accounts.models import Customer, CustomerAddress
-from apps.products.models import Product, AttributeValue   # ✅ import from products
+from apps.products.models import Product, AttributeValue   
 
 
 class Discount(models.Model):

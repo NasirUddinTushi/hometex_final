@@ -43,11 +43,13 @@ class ProductSerializer(serializers.ModelSerializer):
             "name",
             "slug",
             "category_id",
-            "is_bestseller",   # বা MethodField ব্যবহার করলে Meta-তেই থাকবে
+            "is_bestseller",   
             "is_new",
             "price",
             "sale_price",
             "short_description",
+            "weight",
+            "stock",
             "images",
             "attribute_id",
         ]

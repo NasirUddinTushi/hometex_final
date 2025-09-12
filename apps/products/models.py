@@ -51,6 +51,9 @@ class Product(models.Model):
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     short_description = models.TextField(blank=True)
 
+    weight = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Weight in kg")
+    stock = models.PositiveIntegerField(default=0, help_text="Available stock quantity")
+
     def __str__(self):
         return self.name
 

@@ -4,7 +4,7 @@ from decimal import Decimal
 import math
 
 from apps.accounts.models import Customer, CustomerAddress
-from apps.products.models import Product, AttributeValue   # ✅ import from products
+from apps.products.models import Product, AttributeValue   
 
 
 class Discount(models.Model):
@@ -25,6 +25,17 @@ class Discount(models.Model):
 
 
 class Order(models.Model):
+    STATUS_CHOICES = [
+        ("confirmed", "Order Confirmed"),
+        ("processing", "Delivery Processing"),
+        ("delivered", "Order Delivered"),
+    ]
+    STATUS_COLORS = {
+        "confirmed": "#3498db",   # Blue
+        "processing": "#f1c40f", # Yellow
+        "delivered": "#2ecc71",  # Green
+    }
+
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     shipping_address = models.ForeignKey(CustomerAddress, on_delete=models.SET_NULL, null=True)
     payment_method = models.CharField(max_length=50)
@@ -35,14 +46,21 @@ class Order(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Order #{self.id} - {self.customer_id}"
+    #  New
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="confirmed")
+
+    def get_status_display_with_color(self):
+        return {
+            "label": self.get_status_display(),
+            "code": self.status,
+            "color": self.STATUS_COLORS.get(self.status, "#7f8c8d")
+        }
 
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
-    attributes = models.ManyToManyField(AttributeValue, blank=True)   # ✅ use AttributeValue
+    attributes = models.ManyToManyField(AttributeValue, blank=True)   
     quantity = models.IntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -50,7 +68,7 @@ class OrderItem(models.Model):
         return f"Item #{self.id} (Order {self.order_id})"
 
 
-# 🚚 Delivery Rules (DB-driven)
+#  Delivery Rules (DB-driven)
 
 
 class ShippingZone(models.TextChoices):
@@ -63,10 +81,10 @@ class DeliveryRule(models.Model):
     
     
     zone = models.CharField(max_length=20, choices=ShippingZone.choices)
-    min_weight_g = models.PositiveIntegerField(default=0)                 # inclusive
-    max_weight_g = models.PositiveIntegerField(null=True, blank=True)     # exclusive; null = infinity
+    min_weight_g = models.PositiveIntegerField(default=0)                 
+    max_weight_g = models.PositiveIntegerField(null=True, blank=True)     
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    priority = models.IntegerField(default=100)                           # lower = higher priority
+    priority = models.IntegerField(default=100)                           
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -81,7 +99,7 @@ class DeliveryRule(models.Model):
         if self.max_weight_g is not None and self.max_weight_g <= self.min_weight_g:
             raise ValidationError("max_weight_g must be greater than min_weight_g")
 
-        # Active রুলে overlap যেন না হয়
+        
         start1 = self.min_weight_g
         end1 = self.max_weight_g if self.max_weight_g is not None else math.inf
 

@@ -11,15 +11,19 @@ class DeliveryRuleAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "customer", "payment_method", "subtotal", "delivery_charge",
-                    "discount_code", "discount_amount", "total", "created_at")
-    list_filter = ("payment_method", "created_at")
+    list_display = (
+        "id", "customer", "payment_method", "subtotal", "delivery_charge",
+        "discount_code", "discount_amount", "total", "status", "created_at"   
+    )
+    list_filter = ("payment_method", "status", "created_at")   
     search_fields = ("customer__email", "discount_code")
+
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ("id", "order", "product", "quantity", "unit_price")
     search_fields = ("order__id", "product__name")
+
 
 @admin.register(Discount)
 class DiscountAdmin(admin.ModelAdmin):

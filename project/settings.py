@@ -4,10 +4,13 @@ from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-8y1!xdr5d%hgt$&gd@))2dskznyg%+wr8mj3y@(0f-w78-yva*'
-DEBUG = True
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'your-secret-key-for-local-dev-or-production'
 
-ALLOWED_HOSTS = ["*"]
+DEBUG = True  # Set False in production
+
+# Allowed hosts for production and local
+ALLOWED_HOSTS = ["hometexindustries.com", "www.hometexindustries.com", "127.0.0.1", "localhost"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -19,7 +22,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
 
-    # custom apps
+    # Custom apps
     "apps.accounts",
     "apps.site_config",
     "apps.products",
@@ -28,9 +31,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",       # ⬅️ keep first
+    "corsheaders.middleware.CorsMiddleware",  # keep first
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ⬅️ added for static files
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -58,11 +61,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "project.wsgi.application"
 
+# Database
+# Default SQLite
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
-    }
+    },
+    # MySQL from .env
+    # "mysql": {
+    #     "ENGINE": "django.db.backends.mysql",
+    #     "NAME": os.getenv("MYSQL_DATABASE", "hometex_db"),
+    #     "USER": os.getenv("MYSQL_USER", "root"),
+    #     "PASSWORD": os.getenv("MYSQL_PASSWORD", ""),
+    #     "HOST": os.getenv("MYSQL_HOST", "127.0.0.1"),
+    #     "PORT": os.getenv("MYSQL_PORT", "3306"),
+    #     "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
+    # },
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -77,43 +92,39 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# ✅ Static & Media files
-
+# Static files
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR.parent / "staticfiles"   # staticfiles root main project এর বাইরে
-
-
-# Whitenoise static file storage
+STATIC_ROOT = BASE_DIR.parent / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ✅ Media files
+# Media files
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR.parent, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR.parent, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-]
-
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 AUTH_USER_MODEL = "accounts.Customer"
 
 LOGIN_URL = "/admin/login/"
 LOGIN_REDIRECT_URL = "/admin/"
 LOGOUT_REDIRECT_URL = "/admin/login/"
 
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
 
 # DRF
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
-}
+REST_FRAMEWORK = {"DEFAULT_AUTHENTICATION_CLASSES": []}
 
-# ✅ CORS HEADERS SETTINGS
+# CORS headers
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    "content-disposition",
-    "authorization",
-]
+CORS_ALLOW_HEADERS = list(default_headers) + ["content-disposition", "authorization"]
 CORS_ALLOW_CREDENTIALS = True

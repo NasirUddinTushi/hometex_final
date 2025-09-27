@@ -1,10 +1,26 @@
 from rest_framework import serializers
-from .models import Product, Category, Attribute, AttributeValue, ProductImage
+from .models import Product, Category, Attribute, AttributeValue, ProductImage,ProductAttribute
 
 class AttributeValueSerializer(serializers.ModelSerializer):
+    price = serializers.SerializerMethodField()
+    sale_price = serializers.SerializerMethodField()
+
     class Meta:
         model = AttributeValue
-        fields = ['id', 'value']
+        fields = ['id', 'value', 'price', 'sale_price']
+
+    def get_price(self, obj):
+        product = getattr(obj, "productattribute_set", None)
+        if product.exists():
+            return str(product.first().product.price)
+        return None
+
+    def get_sale_price(self, obj):
+        product = getattr(obj, "productattribute_set", None)
+        if product.exists():
+            return str(product.first().product.sale_price or "")
+        return None
+
 
 
 class AttributeSerializer(serializers.ModelSerializer):
@@ -17,8 +33,24 @@ class AttributeSerializer(serializers.ModelSerializer):
         fields = ['attribute_id', 'attribute_name', 'attribute_value']
 
     def get_attribute_value(self, obj):
-        values = obj.values.all()
-        return [v.value for v in values]
+        product = self.context.get("product")  
+        result = []
+
+        for v in obj.values.all():
+            val_data = {"id": v.id, "value": v.value}
+
+            #  check for product-specific price
+            if product:
+                pa = ProductAttribute.objects.filter(product=product, attribute_value=v).first()
+                if pa:
+                    val_data["price"] = str(pa.price or "")
+                    val_data["sale_price"] = str(pa.sale_price or "")
+
+            result.append(val_data)
+        return result
+
+
+
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -29,10 +61,10 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
-    attribute_id = serializers.SerializerMethodField()   # distinct Attribute IDs
+    attribute_id = serializers.SerializerMethodField()  
     category_id = serializers.IntegerField(source='category.id', read_only=True)
 
-    # যদি একদম স্ট্রিং "true"/"false" দরকার হয়, নিচের ২টা আনকমেন্ট করুন:
+    
     # is_bestseller = serializers.SerializerMethodField()
     # is_new = serializers.SerializerMethodField()
 
@@ -43,23 +75,23 @@ class ProductSerializer(serializers.ModelSerializer):
             "name",
             "slug",
             "category_id",
-            "is_bestseller",   # বা MethodField ব্যবহার করলে Meta-তেই থাকবে
+            "is_bestseller",   
             "is_new",
             "price",
             "sale_price",
             "short_description",
+            "weight",
+            "stock",
             "images",
             "attribute_id",
         ]
 
     def get_images(self, obj):
-        """
-        ইমেজকে absolute URL বানাতে request কনটেক্সট ব্যবহার করছি।
-        """
+       
         request = self.context.get('request')
         urls = []
         for img in obj.images.all():
-            url = img.image.url  # মিডিয়ার ভেতরে যেটাই থাকুক, url দেবে
+            url = img.image.url  
             urls.append(request.build_absolute_uri(url) if request else url)
         return urls
 
@@ -74,12 +106,7 @@ class ProductSerializer(serializers.ModelSerializer):
             .distinct()
         )
 
-    # যদি স্ট্রিং "true"/"false" ফোর্স করতে চান:
-    # def get_is_bestseller(self, obj):
-    #     return "true" if obj.is_bestseller else "false"
-    #
-    # def get_is_new(self, obj):
-    #     return "true" if obj.is_new else "false"
+    
 
 
 class CategorySerializer(serializers.ModelSerializer):

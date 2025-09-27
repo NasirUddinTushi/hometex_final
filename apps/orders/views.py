@@ -18,7 +18,6 @@ from apps.accounts.models import Customer, CustomerAddress
 # Order Create API (POST)
 # -------------------------
 class OrderCreateAPIView(APIView):
-    
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -58,46 +57,25 @@ class OrderCreateAPIView(APIView):
             is_default=True
         )
 
-        
-        raw_zone = (
-            request.data.get("customer_payload", {})
-                   .get("shipping_info", {})
-                   .get("zone")
-            or request.data.get("zone")
-        )
-        zone = str(raw_zone).lower().strip() if raw_zone is not None else "inside"
-        if zone not in ("inside", "outside"):
-            zone = "inside"
-
-        # total weight in grams --------
-        total_weight_g = 0
-        for item in data["order_items"]:
-            product = item["product"]   # PrimaryKeyRelatedField (source='product') → instance
-            qty = item["quantity"]
-            prod_weight = getattr(product, "weight_g", 0) or 0  # Product.weight_g 
-            total_weight_g += prod_weight * qty
-
-        # delivery charge from DB rules --------
-        computed_delivery_charge = DeliveryRule.calculate(zone, int(total_weight_g))
-
-        # totals (server-side) --------
+        # -------- 3) totals (client provided) --------
         subtotal = Decimal(data["summary"]["subtotal"])
+        delivery_charge = Decimal(data["summary"]["delivery"])
         discount_amount = Decimal(data["summary"]["discount_amount"])
-        total = subtotal + computed_delivery_charge - discount_amount
+        total = Decimal(data["summary"]["total"])
 
-        #  order create --------
+        # -------- 4) order create --------
         order = Order.objects.create(
             customer=customer,
             shipping_address=shipping_address,
             payment_method=data["payment_method"],
             subtotal=subtotal,
-            delivery_charge=computed_delivery_charge,
+            delivery_charge=delivery_charge,
             discount_code=data["summary"].get("discount_code"),
             discount_amount=discount_amount,
             total=total,
         )
 
-        #  order items --------
+        # -------- 5) order items --------
         for item in data["order_items"]:
             order_item = OrderItem.objects.create(
                 order=order,
@@ -109,6 +87,7 @@ class OrderCreateAPIView(APIView):
             if "attributes" in item:
                 order_item.attributes.set(item["attributes"])
 
+        # -------- 6) response --------
         return Response(
             {
                 "success": True,
@@ -179,7 +158,7 @@ class CustomerOrdersAPIView(APIView):
         data = {"cus_id": int(customer_id), "order": []}
 
         for order in orders:
-            order_dict = {"order_id": order.id, "items": []}
+            order_dict = {"order_id": order.id,"status": order.get_status_display_with_color(), "items": []}
 
             if view_mode == "compact":
                 for it in order.items.all():

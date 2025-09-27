@@ -1,11 +1,13 @@
 from pathlib import Path
+import os
+from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-8y1!xdr5d%hgt$&gd@))2dskznyg%+wr8mj3y@(0f-w78-yva*'
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -15,7 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "corsheaders",     
+    "corsheaders",
 
     # custom apps
     "apps.accounts",
@@ -26,8 +28,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",   # ⬅️ ADD THIS (সবার উপরে রাখুন)
+    "corsheaders.middleware.CorsMiddleware",       # ⬅️ keep first
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ⬅️ added for static files
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -74,11 +77,19 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+# ✅ Static & Media files
+
 STATIC_URL = "/static/"
-MEDIA_URL = "/media/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_ROOT  = BASE_DIR / "media"
+STATIC_ROOT = BASE_DIR.parent / "staticfiles"   # staticfiles root main project এর বাইরে
+
+
+# Whitenoise static file storage
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# ✅ Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR.parent, 'media')
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -99,25 +110,10 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
 }
 
-# -----------------------------
 # ✅ CORS HEADERS SETTINGS
-# -----------------------------
-# Development এ সব origin allow
-CORS_ALLOW_ALL_ORIGINS = True  
-
-# যদি শুধু নির্দিষ্ট ডোমেইন allow করতে চান:
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-#     "http://127.0.0.1:5173",
-#     "https://your-frontend.com",
-# ]
-
-# Extra headers allow করতে চাইলে:
-from corsheaders.defaults import default_headers
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "content-disposition",
     "authorization",
 ]
-
-# Cookie / session যদি দরকার হয় (JWT না হলে):
 CORS_ALLOW_CREDENTIALS = True

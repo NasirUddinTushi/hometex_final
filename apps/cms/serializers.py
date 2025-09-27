@@ -5,7 +5,8 @@ from .models import Testimonial, BlogPost, BlogAuthor, InfoPage, HomeSection, Co
 class TestimonialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Testimonial
-        fields = ['id', 'customer_name', 'message', 'rating', 'created_at']
+        fields = ['id', 'customer_name', 'message', 'rating', 'image', 'created_at'] 
+
         
 
 
@@ -20,8 +21,7 @@ class BlogPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BlogPost
-        fields = ['id', 'title', 'slug', 'content', 'author', 'created_at']
-
+        fields = ['id', 'title', 'slug', 'content', 'author', 'image', 'created_at'] 
 
 class InfoPageSerializer(serializers.ModelSerializer):
     class Meta:

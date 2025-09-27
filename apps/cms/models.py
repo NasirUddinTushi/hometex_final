@@ -6,6 +6,7 @@ class Testimonial(models.Model):
     customer_name = models.CharField(max_length=255)
     message = models.TextField()
     rating = models.PositiveIntegerField(default=5)
+    image = models.ImageField(upload_to="testimonials/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -26,6 +27,7 @@ class BlogPost(models.Model):
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     content = models.TextField()
     author = models.ForeignKey(BlogAuthor, on_delete=models.SET_NULL, null=True)
+    image = models.ImageField(upload_to="blogs/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

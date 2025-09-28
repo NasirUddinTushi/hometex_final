@@ -102,10 +102,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return urls
 
     def get_attribute_id(self, obj):
-        """
-        Product -> ProductAttribute -> AttributeValue -> Attribute
-        থেকে distinct attribute.id লিস্ট
-        """
+       
         return list(
             AttributeValue.objects.filter(productattribute__product=obj)
             .values_list('attribute_id', flat=True)
@@ -138,4 +135,8 @@ class CategorySerializer(serializers.ModelSerializer):
         return 0
 
     def get_category_image_url(self, obj):
-        return obj.image.url if obj.image else ""
+        request = self.context.get('request')
+        if obj.image:
+            url = obj.image.url
+            return request.build_absolute_uri(url) if request else url
+        return ""

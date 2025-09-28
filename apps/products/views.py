@@ -38,13 +38,13 @@ class CategoryListView(APIView):
         if category_id:
             try:
                 category = Category.objects.get(id=category_id)
-                serializer = CategorySerializer(category)
+                serializer = CategorySerializer(category, context={'request': request})
                 return Response({"category": serializer.data}, status=status.HTTP_200_OK)
             except Category.DoesNotExist:
                 return Response({"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
 
         categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
+        serializer = CategorySerializer(categories, many=True, context={'request': request})
         return Response({"items": serializer.data}, status=status.HTTP_200_OK)
 
 

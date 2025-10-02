@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category, Attribute, AttributeValue, ProductImage,ProductAttribute
+from .models import Product, Category, Attribute, AttributeValue, ProductImage,ProductAttribute, ProductFAQ
 
 class AttributeValueSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
@@ -51,7 +51,10 @@ class AttributeSerializer(serializers.ModelSerializer):
 
 
 
-
+class ProductFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductFAQ
+        fields = ["title", "content"]
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,6 +66,7 @@ class ProductSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     attribute_id = serializers.SerializerMethodField()  
     category_id = serializers.IntegerField(source='category.id', read_only=True)
+    faqs = ProductFAQSerializer(many=True, read_only=True)
 
     
     # is_bestseller = serializers.SerializerMethodField()
@@ -80,6 +84,8 @@ class ProductSerializer(serializers.ModelSerializer):
             "price",
             "sale_price",
             "short_description",
+            "detailed_description",
+            "faqs",
             "weight",
             "stock",
             "images",
@@ -96,10 +102,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return urls
 
     def get_attribute_id(self, obj):
-        """
-        Product -> ProductAttribute -> AttributeValue -> Attribute
-        থেকে distinct attribute.id লিস্ট
-        """
+       
         return list(
             AttributeValue.objects.filter(productattribute__product=obj)
             .values_list('attribute_id', flat=True)

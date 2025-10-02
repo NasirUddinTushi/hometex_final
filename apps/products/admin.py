@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Product, ProductImage, Category,
-    Attribute, AttributeValue, ProductAttribute
+    Attribute, AttributeValue, ProductAttribute,ProductFAQ
 )
 
 # Inlines
@@ -14,6 +14,9 @@ class ProductAttributeInline(admin.TabularInline):
     extra = 1
     fields = ('attribute_value', 'price', 'sale_price') 
 
+class ProductFAQInline(admin.TabularInline):   
+    model = ProductFAQ
+    extra = 1
 
 
 @admin.register(Category)
@@ -34,7 +37,7 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name', 'slug')
     list_filter = ('category', 'is_bestseller', 'is_new')
-    inlines = [ProductImageInline, ProductAttributeInline]
+    inlines = [ProductImageInline, ProductAttributeInline, ProductFAQInline]
 
 @admin.register(Attribute)                  
 class AttributeAdmin(admin.ModelAdmin):

@@ -33,20 +33,26 @@ class AttributeSerializer(serializers.ModelSerializer):
         fields = ['attribute_id', 'attribute_name', 'attribute_value']
 
     def get_attribute_value(self, obj):
-        product = self.context.get("product")  
+        product = self.context.get("product")
         result = []
 
-        for v in obj.values.all():
-            val_data = {"id": v.id, "value": v.value}
+        if product:
+            # Only values linked with this product
+            product_attributes = obj.values.filter(productattribute__product=product)
+            for v in product_attributes:
+                pa = v.productattribute_set.filter(product=product).first()
+                val_data = {
+                    "id": v.id,
+                    "value": v.value,
+                    "price": str(pa.price) if pa and pa.price else "",
+                    "sale_price": str(pa.sale_price) if pa and pa.sale_price else ""
+                }
+                result.append(val_data)
+        else:
+            # fallback: all values (if product not provided)
+            for v in obj.values.all():
+                result.append({"id": v.id, "value": v.value})
 
-            #  check for product-specific price
-            if product:
-                pa = ProductAttribute.objects.filter(product=product, attribute_value=v).first()
-                if pa:
-                    val_data["price"] = str(pa.price or "")
-                    val_data["sale_price"] = str(pa.sale_price or "")
-
-            result.append(val_data)
         return result
 
 
@@ -135,4 +141,8 @@ class CategorySerializer(serializers.ModelSerializer):
         return 0
 
     def get_category_image_url(self, obj):
-        return obj.image.url if obj.image else ""
+        request = self.context.get('request')
+        if obj.image:
+            url = obj.image.url
+            return request.build_absolute_uri(url) if request else url
+        return ""

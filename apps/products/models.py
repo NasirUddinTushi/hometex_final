@@ -1,4 +1,5 @@
 from django.db import models
+from ckeditor_uploader.fields import RichTextUploadingField
 
 
 # Category
@@ -49,8 +50,8 @@ class Product(models.Model):
     is_new = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    short_description = models.TextField(blank=True)
-    detailed_description = models.TextField(blank=True, null=True)
+    short_description = RichTextUploadingField(blank=True, null=True)
+    detailed_description = RichTextUploadingField(blank=True, null=True)
 
     weight = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Weight in kg")
     stock = models.PositiveIntegerField(default=0, help_text="Available stock quantity")
@@ -62,7 +63,7 @@ class Product(models.Model):
 class ProductFAQ(models.Model):
     product = models.ForeignKey("Product", related_name="faqs", on_delete=models.CASCADE)
     title = models.CharField(max_length=255)   # e.g. "Taking care"
-    content = models.TextField()              # e.g. bullet points or text
+    content = RichTextUploadingField(blank=True, null=True)              # e.g. bullet points or text
 
     def __str__(self):
         return f"{self.product.name} - {self.title}"
